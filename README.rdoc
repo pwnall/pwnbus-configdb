@@ -1,4 +1,4 @@
-= new
+= pwnbus-configdb
 
 Description goes here.
 

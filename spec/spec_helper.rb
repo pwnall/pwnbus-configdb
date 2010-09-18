@@ -8,7 +8,7 @@ rescue Bundler::BundlerError => e
 end
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'new'
+require 'pwnbus/configdb'
 require 'rspec'
 require 'rspec/autorun'
 
