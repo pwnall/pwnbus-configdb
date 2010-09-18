@@ -13,10 +13,10 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "new"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
-  gem.email = "costan@gmail.com"
-  gem.homepage = "http://github.com/pwnall/new"
+  gem.summary = %Q{Pure-ruby database for configuration variables.}
+  gem.description = %Q{Dead-simple key-value store with atomic updates.}
+  gem.email = "victor@costan.us"
+  gem.homepage = "http://github.com/pwnall/pwnbus_configdb"
   gem.authors = ["Victor Costan"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
@@ -26,6 +26,7 @@ Jeweler::Tasks.new do |gem|
   gem.add_development_dependency "bundler", "~> 1.0.0"
   gem.add_development_dependency "jeweler", "~> 1.5.0.pre3"
   gem.add_development_dependency "rcov", ">= 0"
+  gem.add_development_dependency "fakefs", ">= 0.2.1"
 end
 Jeweler::RubygemsDotOrgTasks.new
 

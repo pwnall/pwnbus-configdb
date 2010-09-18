@@ -6,14 +6,63 @@ module Pwnbus
 # :nodoc: file-related functionality
 module Configdb
   
+# Handling procedures for database files.
 module Files
   # Opens the file for a configuration database. The file must exist.
+  #
+  # Returns a File instance.
   def self.open_db(db_path, options)
-    f = File.open db_path, (options[:read] ? 'r' : 'r+')
+    db_path = crash_recovery_db_path db_path
+    f = File.open db_path, 'r'
     f.flock options[:read] ? File::LOCK_SH : File::LOCK_EX
     f
   end
   
+  # Peforms crash recovery on a database.
+  #
+  # Args:
+  #   db_path:: path to a file containing a configuration database
+  #   options:: same as for Configdb#new
+  #
+  # Returns the path to the recovered database. Most of the time, this will be 
+  def self.crash_recovery_db_path(db_path, options)
+    new_db_path = db_path + '.new'
+    if !File.exist?(db_path)
+      # Crashed during rename.
+      if options[:read]        
+        # Writing to the .new copy completed. The copy will be locked.
+        return new_db_path
+      else
+        # Do the rename.
+        File.rename new_db_path, db_path
+        return db_path
+      end
+    end
+          
+    if File.exist?(new_db_path) && !options[:read]
+      # Crashed during new version write. The new version is probably corrupted.
+      File.unlink new_db_path
+    end
+    db_path
+  end
+  
+  # Writes a new database version atomically.
+  #
+  # Args:
+  #   db_path:: path to a file containing a configuration database
+  #   options:: same as for Configdb#new
+  #
+  # Returns db_path.
+  def self.write_db(db_path, options)
+    new_db_path = db_path + '.new'
+    File.open(db_path, 'w') do |f|
+      f.flock File::LOCK_EX
+      yield f
+    end
+    File.unlink db_path
+    File.rename new_db_path, db_path
+    db_path
+  end
 
   # True if the file is accessible with the desired Configdb#open options.
   #
@@ -32,7 +81,7 @@ module Files
   def self.find_db(name)
     db_dir_paths.each do |dir_path|
       db_path = File.join dir_path, name + '.yml'
-      return db_path if File.exist?(db_path) || File.exist(db_path + '.bk')
+      return db_path if File.exist?(db_path) || File.exist(db_path + '.new')
     end
     nil
   end
@@ -85,7 +134,6 @@ module Files
   def self.superuser?
     Process.euid == 0
   end
-  
 end  # namespace Pwnbus::Configdb::Files
 
 end  # namespace Pwnbus::Configdb

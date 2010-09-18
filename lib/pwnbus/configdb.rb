@@ -1,10 +1,10 @@
-require File.expand_path('../configdb/file.rb', __FILE__)
-require File.expand_path('../configdb/object.rb', __FILE__)
+require File.expand_path('../configdb/db.rb', __FILE__)
+require File.expand_path('../configdb/files.rb', __FILE__)
 
 # :nodoc: namespace
 module Pwnbus
 
-
+# Pure-ruby database for configuration variables.
 module Configdb
   # Opens a configuration database. The database is created if it doesn't exist.
   #
@@ -15,14 +15,16 @@ module Configdb
   #     :public:: 
   def self.open(name, options = {})
     db_path = Files.find_db(name) || Files.create_db(name, options)
-    unless Files.can_access_path?(db_path, options)
-      raise "Access denied for configdb #{name}"
-    end
     
     db_file = Files.open_db(name, options)
     db = Pwnbus::Configdb
     begin
       yield f
+      if db.dirty?
+        Files.write_file db_path do |wf|
+          db.write wf
+        end
+      end
     ensure
       db.close
       db_file.close
