@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
     "lib/pwnbus/configdb.rb",
     "lib/pwnbus/configdb/db.rb",
     "lib/pwnbus/configdb/files.rb",
+    "pwnbus-configdb.gemspec",
     "spec/.rspec",
     "spec/db_object_spec.rb",
     "spec/db_spec.rb",
