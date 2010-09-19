@@ -32,7 +32,7 @@ module Configdb
     begin
       return_value = yield db.proxy
       if db.dirty?
-        Files.write_file db_path do |wf|
+        Files.write_db db_path, options do |wf|
           db.write wf
         end
       end

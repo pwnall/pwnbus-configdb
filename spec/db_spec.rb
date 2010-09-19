@@ -73,6 +73,39 @@ describe "Db with stubbed dir" do
     end
   end
   
+  describe "with saved db" do
+    before do
+      Configdb.open('persistence') do |p|
+        p.really.long.flag = true
+        p.really.long.number = 41
+        p.really.long.string = 'something'
+      end
+    end
+    
+    it "should report variables correctly" do
+      Configdb.open('persistence') do |p|
+        p.really.long.flag.should == true
+        p.really.long.number.should == 41
+        p.really.long.string.should == 'something'
+      end
+    end
+    
+    describe "after overwriting some vars" do
+      Configdb.open('persistence') do |p|
+        p.really.long.number = 42
+        p.really.long.flag = false
+      end
+      
+      it "should report changes correctly" do
+        Configdb.open('persistence') do |p|
+          p.really.long.flag.should == false
+          p.really.long.number.should == 42
+          p.really.long.string.should == 'something'        
+        end
+      end
+    end
+  end
+  
   describe "after crash" do
     before do
       @crash_path = @user_dir + '/crash.yml'

@@ -57,7 +57,12 @@ class Db
   # Returns value.
   def []=(key, value)
     @dirty = true
-    @data[key.to_s] = value.dup
+    if value.nil?
+      @data.delete key.to_s
+    else
+      @data[key.to_s] = (value.kind_of?(Numeric) || value.kind_of?(Symbol) ||
+                         value == true || value == false) ? value : value.dup
+    end
     value
   end
   
@@ -75,7 +80,8 @@ class Db
   # key doesn't exist. This makes it possible to have .-separated keys, like
   # db.user.name = 'abc'.
   def proxy_get(key)
-    (value = self[key]) ? value : Proxy.new(self, key + '.')
+    value = self[key]
+    value.nil? ? Proxy.new(self, key + '.') : value
   end
   
   # Inserts or updates
