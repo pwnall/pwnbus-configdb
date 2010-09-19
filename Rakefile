@@ -12,7 +12,7 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-  gem.name = "new"
+  gem.name = "pwnbus-configdb"
   gem.summary = %Q{Pure-ruby database for configuration variables.}
   gem.description = %Q{Dead-simple key-value store with atomic updates.}
   gem.email = "victor@costan.us"
