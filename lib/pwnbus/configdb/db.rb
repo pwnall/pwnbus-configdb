@@ -17,6 +17,7 @@ class Db
   #   file:: File instance
   def initialize(file)
     @data = YAML.load file
+    @dirty = false
     @proxy = Proxy.new self, ''
   end
   
@@ -30,6 +31,11 @@ class Db
     file.truncate 0
     YAML.dump file
     true
+  end
+  
+  # Any future reads / writes will result in a crash.
+  def close
+    @data = nil
   end
   
   # Reads a key from the database.
@@ -50,8 +56,14 @@ class Db
   #
   # Returns value.
   def []=(key, value)
+    @dirty = true
     @data[key.to_s] = value.dup
     value
+  end
+  
+  # True if the database contents has changed since the database has been open.
+  def dirty?
+    @dirty
   end
   
   # Reads a key from the database, creating a proxy for inexistent keys.

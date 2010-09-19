@@ -26,7 +26,6 @@ Jeweler::Tasks.new do |gem|
   gem.add_development_dependency "bundler", "~> 1.0.0"
   gem.add_development_dependency "jeweler", "~> 1.5.0.pre3"
   gem.add_development_dependency "rcov", ">= 0"
-  gem.add_development_dependency "fakefs", ">= 0.2.1"
 end
 Jeweler::RubygemsDotOrgTasks.new
 

@@ -12,7 +12,7 @@ module Files
   #
   # Returns a File instance.
   def self.open_db(db_path, options)
-    db_path = crash_recovery_db_path db_path
+    db_path = crash_recovery_db_path db_path, options
     f = File.open db_path, 'r'
     f.flock options[:read] ? File::LOCK_SH : File::LOCK_EX
     f
@@ -55,8 +55,10 @@ module Files
   # Returns db_path.
   def self.write_db(db_path, options)
     new_db_path = db_path + '.new'
-    File.open(db_path, 'w') do |f|
+    File.open(new_db_path, 'w') do |f|
       f.flock File::LOCK_EX
+      permissions = public_db_name?(name) ? 0644 : 0600
+      File.chmod permissions, new_db_path      
       yield f
     end
     File.unlink db_path
@@ -81,7 +83,7 @@ module Files
   def self.find_db(name)
     db_dir_paths.each do |dir_path|
       db_path = File.join dir_path, name + '.yml'
-      return db_path if File.exist?(db_path) || File.exist(db_path + '.new')
+      return db_path if File.exist?(db_path) || File.exist?(db_path + '.new')
     end
     nil
   end
@@ -97,9 +99,9 @@ module Files
     db_path = File.join ensure_db_dir_exists, name + '.yml'
     File.open(db_path, 'w') do |f|
       f.flock File::LOCK_EX
-      YAML.dump(empty_db_data, f)
+      YAML.dump empty_db_data(name), f
     end
-    permissions = options[:public] ? 0644 : 0600
+    permissions = public_db_name?(name) ? 0644 : 0600
     File.chmod permissions, db_path
     db_path
   end
@@ -112,22 +114,38 @@ module Files
     {}
   end
   
+  # Databases whose names start with . are public (global-read, author-write).
+  def self.public_db_name?(name)
+    name[0] != ?.
+  end
+  
   # Returns the the database directory. Creates it if it doesn't exist.
   def self.ensure_db_dir_exists
     dir_path = db_dir_paths.first
-    return if File.exist? dir_path
-    
-    FileUtils.mkdir_p dir_path
-    FileUtils.chmod 0755, dir_path
+    unless File.exist? dir_path    
+      FileUtils.mkdir_p dir_path
+      File.chmod 0755, dir_path
+    end
+    dir_path
   end
   
   # Paths to the directory containing database files for the current user.
   def self.db_dir_paths
     if superuser?
-      ['/etc/pwnbus']
+      [db_dir_global_path]
     else
-      [File.expand_path('~/.pwnbus'), '/etc/pwnbus']
+      [db_dir_user_path, db_dir_global_path]
     end
+  end
+  
+  # Path to the directory holding per-user databases.
+  def self.db_dir_user_path
+    File.expand_path('~/.pwnbus')
+  end
+  
+  # Path to the computer-global databases.
+  def self.db_dir_global_path
+    '/etc/pwnbus'
   end
   
   # True if running as the root user.
