@@ -145,6 +145,10 @@ describe "Db with stubbed dir" do
       it "should read the old copy" do
         @db_old.should == 'yes'
       end
+      
+      it "should remove the partial write" do        
+        File.exist?(@crash_new_path).should be_false
+      end
     end
     
     describe "during rename" do
@@ -162,5 +166,37 @@ describe "Db with stubbed dir" do
         File.exist?(@crash_new_path).should be_false
       end
     end
+    
+    describe "with readonly access" do
+      describe "during writing" do
+        before do
+          @db_old = Configdb.open('crash', :read => true) { |crash| crash.old }
+        end
+        
+        it "should read the old copy" do
+          @db_old.should == 'yes'
+        end
+        
+        it "should leave the files alone" do
+          File.exist?(@crash_new_path).should be_true          
+        end
+      end
+      
+      describe "during rename" do
+        before do
+          File.unlink @crash_path
+          @db_old = Configdb.open('crash', :read => true) { |crash| crash.old }        
+        end
+        
+        it "should read the new copy" do
+          @db_old.should == 'no'
+        end
+        
+        it "should leave the files alone" do
+          File.exist?(@crash_path).should be_false
+          File.exist?(@crash_new_path).should be_true
+        end        
+      end      
+    end    
   end
 end

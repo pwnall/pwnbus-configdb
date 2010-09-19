@@ -51,4 +51,18 @@ describe "Db object" do
     @proxy.deeper.new_key = 'new mixed value'
     @proxy.deeper.new_key.should == 'new mixed value'
   end
+  
+  it "is not dirty at start" do
+    @db.should_not be_dirty
+  end
+  
+  it "is not dirty after read" do
+    @proxy.variable
+    @db.should_not be_dirty
+  end
+  
+  it "is dirty after write" do
+    @proxy.variable = 'value'
+    @db.should be_dirty
+  end
 end
