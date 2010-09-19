@@ -57,7 +57,7 @@ module Files
     new_db_path = db_path + '.new'
     File.open(new_db_path, 'w') do |f|
       f.flock File::LOCK_EX
-      permissions = public_db_name?(name) ? 0644 : 0600
+      permissions = public_db_name?(File.basename(db_path)) ? 0644 : 0600
       File.chmod permissions, new_db_path      
       yield f
     end

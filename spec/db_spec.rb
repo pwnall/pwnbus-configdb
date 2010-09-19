@@ -75,34 +75,56 @@ describe "Db with stubbed dir" do
   
   describe "with saved db" do
     before do
-      Configdb.open('persistence') do |p|
-        p.really.long.flag = true
-        p.really.long.number = 41
-        p.really.long.string = 'something'
+      Configdb.open('persistence') do |c|
+        c.really.long.flag = true
+        c.really.long.number = 41
+        c.really.long.string = 'something'
       end
     end
     
     it "should report variables correctly" do
-      Configdb.open('persistence') do |p|
-        p.really.long.flag.should == true
-        p.really.long.number.should == 41
-        p.really.long.string.should == 'something'
+      Configdb.open('persistence') do |c|
+        c.really.long.flag.should == true
+        c.really.long.number.should == 41
+        c.really.long.string.should == 'something'
       end
     end
     
+    it "should make the dbfile world-readable" do
+      (File.stat(@user_dir + '/persistence.yml').mode & 0777).should == 0644
+    end
+    
     describe "after overwriting some vars" do
-      Configdb.open('persistence') do |p|
-        p.really.long.number = 42
-        p.really.long.flag = false
+      before do
+        Configdb.open('persistence') do |c|
+          c.really.long.number = 42
+          c.really.long.flag = false
+        end
       end
       
       it "should report changes correctly" do
-        Configdb.open('persistence') do |p|
-          p.really.long.flag.should == false
-          p.really.long.number.should == 42
-          p.really.long.string.should == 'something'        
+        Configdb.open('persistence') do |c|
+          c.really.long.flag.should == false
+          c.really.long.number.should == 42
+          c.really.long.string.should == 'something'        
         end
       end
+    end
+  end
+  
+  describe "with private db" do
+    before do
+      Configdb.open('.private') do |c|
+        c.secret.pin = '1234'
+      end
+    end
+    
+    it "should not make the dbfile world-readable" do
+      (File.stat(@user_dir + '/.private.yml').mode & 0777).should == 0600
+    end
+    
+    it "should be able to read back data" do
+      Configdb.open('.private') { |c| c.secret.pin.should == '1234' }
     end
   end
   

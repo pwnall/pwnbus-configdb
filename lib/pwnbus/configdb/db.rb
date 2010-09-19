@@ -29,7 +29,7 @@ class Db
   # Returns true.
   def write(file)
     file.truncate 0
-    YAML.dump file
+    YAML.dump @data, file
     true
   end
   
